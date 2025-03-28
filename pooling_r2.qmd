@@ -1,0 +1,76 @@
+---
+title: "Pooling Nagelkerke R2"
+format: html
+---
+
+## Motivating example
+
+```{r}
+# setup
+set.seed(123)
+library(mice, warn.conflicts = FALSE)
+```
+
+Pooling $R^2$ values after linear regression works fine^[Well, let's assume it does.] using the `pool.r.squared()` function.
+
+```{r}
+# data
+dat <- nhanes
+# impute
+imp <- mice(dat, print = FALSE)
+# fit linear regression on each imputation
+fits <- with(imp, lm(bmi ~ age + hyp))
+# pool estimates
+pooled <- pool(fits)
+summary(pooled)
+# pool R2
+pool.r.squared(fits)
+```
+
+For logistic regression, however, the `pool.r.squared()` function does not work. 
+
+```{r, error=TRUE}
+# edit data to create binary variable
+dat$hyp <- dat$hyp - 1
+
+# impute 
+imp <- mice(dat, print = FALSE)
+# fit logistic regression on each imputation
+fits <- with(imp, glm(hyp ~ age + bmi, family = "binomial"))
+# pool estimates
+pooled <- pool(fits)
+summary(pooled)
+# pool R2
+pool.r.squared(fits)
+```
+
+There is no $R^2$ value in logistic regression model objects, therefore the function `pool.r.squared()` does not work.
+
+Instead, there are several pseudo $R^2$ metrics which might be calculated. Nagelkerke $R^2$ is a common alternative.
+
+```{r}
+performance::r2_nagelkerke(fits$analyses[[1]])
+fmsb::NagelkerkeR2(fits$analyses[[1]])
+```
+
+Like the `pool.r.squared()` function, a Fisher transformation cf. Hayes (2009) might be applied to pseudo $R^2$ values. But does that work? Let's find out!
+
+```{r}
+source("R/pool_r2.R")
+```
+
+We can calculate the Nagelkerke $R^2$ on each imputation and then pool the values.
+
+```{r}
+# calculate R2 on one imputation
+nagelkerke_r2(fits$analyses[[1]])
+
+# calculate pooled R2
+pool_nagelkerke_r2(fits)
+```
+
+## Simulation
+
+
+
+
