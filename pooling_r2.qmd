@@ -11,7 +11,7 @@ set.seed(123)
 library(mice, warn.conflicts = FALSE)
 ```
 
-Pooling $R^2$ values after linear regression works fine^[Well, let's assume it does.] using the `pool.r.squared()` function.
+Pooling $R^2$ values after linear regression works fine^[Well, let's assume it does. See also van Ginkel, J. R. (2020). Standardized regression coefficients and newly proposed estimators for R 2 in multiply imputed data. Psychometrika, 85(1), 185-205.] using the `pool.r.squared()` function.
 
 ```{r}
 # data
