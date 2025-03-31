@@ -71,6 +71,10 @@ pool_nagelkerke_r2(fits)
 
 ## Simulation
 
+```{r}
+load("./results/out.RData")
+rowMeans(out, na.rm = TRUE)
+```
 
 
 
