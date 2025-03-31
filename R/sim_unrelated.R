@@ -1,7 +1,7 @@
 # simulation study illustrating that the Fisher transformation over-estimates pooled R^2 values
 # with linear regression
 P <- 10
-N <- 100
+N <- 10000
 V <- 0.5 + 0.5 * diag(P)
 
 sim <- function(N, P, rho) {
@@ -11,7 +11,7 @@ sim <- function(N, P, rho) {
   
   df <- data.frame(y, X)
   
-  amp <- mice::ampute(df)$amp
+  amp <- mice::ampute(df, mech = "MCAR")$amp
   imp <- mice::mice(amp, method = "norm", print = FALSE)
   
   fit <- with(imp, lm(y ~ X1 + X2 + X3 + X4 + X5 + X6 + X7 + X8 + X9 + X10))
@@ -48,7 +48,7 @@ sim <- function(N, P, rho) {
   df <- data.frame(y, X)
   r2_obs <- glm(y ~ ., data = df, family = "binomial") |> nagelkerke_r2()
   
-  amp <- mice::ampute(df)$amp
+  amp <- mice::ampute(df, mech = "MCAR")$amp
   imp <- mice::mice(amp, method = c("pmm", rep("norm", P)), print = FALSE)
   
   fit <- with(imp, glm(y ~ X1 + X2 + X3 + X4 + X5 + X6 + X7 + X8 + X9 + X10, family = "binomial"))
