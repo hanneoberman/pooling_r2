@@ -1,7 +1,7 @@
 # simulation study illustrating that the Fisher transformation over-estimates pooled R^2 values
 # with linear regression
 P <- 10
-N <- 10000
+N <- 100
 V <- 0.5 + 0.5 * diag(P)
 
 sim <- function(N, P, rho) {
@@ -16,16 +16,19 @@ sim <- function(N, P, rho) {
   
   fit <- with(imp, lm(y ~ X1 + X2 + X3 + X4 + X5 + X6 + X7 + X8 + X9 + X10))
   
+  new <- pool_r_squared(fit)
+  
   c(obs = summary(lm(y~.,df))$r.squared,
-    imp = mice::pool.r.squared(fit)[,1])
+    hay = mice::pool.r.squared(fit)[,1],
+    new = new)
 }
 
 library(pbapply)
 
 cl <- parallel::makeCluster(4)
-parallel::clusterExport(cl, c("sim", "P", "N"))
+parallel::clusterExport(cl, c("sim", "P", "N", "pool_r_squared"))
 
-out <- pbreplicate(1000, sim(N, P, 0.5), cl = cl)
+out <- pbreplicate(100, sim(N, P, 0.5), cl = cl)
 
 parallel::stopCluster(cl)
 

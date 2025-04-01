@@ -32,3 +32,20 @@ pool_nagelkerke_r2 <- function(mira) {
   return(pooled)
 }
 
+# R2 by pooling predictions
+pool_r_squared <- function(mira) {
+  # observed outcome values
+  tidy_fit <- broom::augment(mira$analyses[[1]])
+  col_nr <- ifelse(names(tidy_fit)[1] == ".rownames", 2, 1)
+  
+  # predicted values per imputation
+  preds <- purrr::map(mira$analyses, ~ {
+    broom::augment(.x)$.fitted
+  }) 
+  
+  # pool predictions
+  pred <- do.call(cbind, preds) |> rowMeans()
+  
+  # calculate R2
+  cor(tidy_fit[, col_nr], pred)[1] ^ 2
+}

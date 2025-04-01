@@ -77,4 +77,28 @@ rowMeans(out, na.rm = TRUE)
 ```
 
 
+## Different pooling
+
+Test different method for computing $R^2$.
+
+```{r}
+fit <- lm(bmi ~ age, data = dat)
+summary(fit)
+
+r_squared <- function(fit) {
+  pred <- broom::augment(fit) # |> dplyr::select(-.rownames)
+  col_nr <- ifelse(names(pred)[1] == ".rownames", 2, 1)
+  r2 <- cor(pred[, col_nr], pred$.fitted)[1]^2
+  return(r2)
+}
+
+r_squared(fit)
+```
+
+Apply to each imputation.
+
+```{r}
+fits <- with(imp, lm(bmi ~ age))
+pool_r_squared(fits)
+```
 
