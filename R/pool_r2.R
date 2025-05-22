@@ -34,18 +34,21 @@ pool_nagelkerke_r2 <- function(mira) {
 
 # R2 by pooling predictions
 pool_r_squared <- function(mira) {
-  # observed outcome values
-  tidy_fit <- broom::augment(mira$analyses[[1]])
-  col_nr <- ifelse(names(tidy_fit)[1] == ".rownames", 2, 1)
-  
-  # predicted values per imputation
-  preds <- purrr::map(mira$analyses, ~ {
-    broom::augment(.x)$.fitted
+  corrs <- purrr::map_dbl(mira$analyses, ~ {
+    tidy_fit <- broom::augment(.x)
+    col_nr <- ifelse(names(tidy_fit)[1] == ".rownames", 2, 1)
+    r <- cor(tidy_fit[, col_nr], tidy_fit$.fitted)[1]
+    z <- 0.5 * log((r + 1) / (1 - r))
   }) 
+  df <- 1 / (broom::glance(mira$analyses[[1]])$nobs - 3)
+  pooling <- mice::pool.scalar(corrs, df)
   
-  # pool predictions
-  pred <- do.call(cbind, preds) |> rowMeans()
-  
-  # calculate R2
-  cor(tidy_fit[, col_nr], pred)[1] ^ 2
+  out <- array(((exp(2 * pooling$qbar) - 1) / (1 + exp(2 * pooling$qbar)))^2,
+               dim = c(1, 4)
+  )
+  dimnames(out) <- list("R^2", c("est", "lo 95", "hi 95", "fmi"))
+  out[, 2] <- ((exp(2 * (pooling$qbar - 1.96 * sqrt(pooling$t))) - 1) / (1 + exp(2 * (pooling$qbar - 1.96 * sqrt(pooling$t)))))^2
+  out[, 3] <- ((exp(2 * (pooling$qbar + 1.96 * sqrt(pooling$t))) - 1) / (1 + exp(2 * (pooling$qbar + 1.96 * sqrt(pooling$t)))))^2
+  out[, 4] <- pooling$fmi
+  return(out)
 }

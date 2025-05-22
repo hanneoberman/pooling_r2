@@ -16,11 +16,9 @@ sim <- function(N, P, rho) {
   
   fit <- with(imp, lm(y ~ X1 + X2 + X3 + X4 + X5 + X6 + X7 + X8 + X9 + X10))
   
-  new <- pool_r_squared(fit)
-  
   c(obs = summary(lm(y~.,df))$r.squared,
     hay = mice::pool.r.squared(fit)[,1],
-    new = new)
+    new = pool_r_squared(fit)[,1])
 }
 
 library(pbapply)
